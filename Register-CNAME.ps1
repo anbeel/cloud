@@ -56,7 +56,7 @@ if($rs.Name -eq "$name.") {
     Sleep 30
   } while ( $true );
 } else { "[R53]`t[$name] entry not found (returned entry is for $($rs.Name))" | Out-Default }
-"[R53]`t[$name] create entry" | Out-Default
+
 $record = new-object Amazon.Route53.Model.ResourceRecord
 $record.Value = $target
 $rs = New-Object Amazon.Route53.Model.ResourceRecordSet
@@ -67,5 +67,15 @@ $rs.ResourceRecords = $record
 $change = new-object Amazon.Route53.Model.Change
 $change.Action = 'CREATE'
 $change.ResourceRecordSet = $rs
+do
+{
+    try
+    {
+      "[R53]`t[$name] create entry" | Out-Default
+      Edit-R53ResourceRecordSet -HostedZoneId $hostedZoneId -ChangeBatch_Changes $change -AccessKey $credentials.AccessKeyId -SecretKey $credentials.SecretAccessKey -SessionToken $credentials.SessionToken | Out-Null
+      "[R53]`t[$name] created" | Out-Default
+      break
+    } catch { $_.Exception.Message }
+    Sleep 30
+} while ( $true )
 
-Edit-R53ResourceRecordSet -HostedZoneId $hostedZoneId -ChangeBatch_Changes $change -AccessKey $credentials.AccessKeyId -SecretKey $credentials.SecretAccessKey -SessionToken $credentials.SessionToken | Out-Null
