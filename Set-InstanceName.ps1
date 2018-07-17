@@ -1,4 +1,4 @@
-Param($InstanceName)
+Param($InstanceName,$InstanceTeam)
 
 Begin {
   Set-DefaultAWSRegion $env:AWSRegion
@@ -11,8 +11,9 @@ Process {
     $spot = Get-EC2SpotInstanceRequest $_
     $spot.Status.Message | Out-Default
   } while( $spot.State -eq 'open' )
-  "Set Instance Name:$InstanceName" | Out-Default 
+  "Set Instance Name:$InstanceName,$InstanceTeam" | Out-Default 
   New-EC2Tag -Resource $spot.InstanceId -Tag @{Key='Name'; Value=$InstanceName}
+  New-EC2Tag -Resource $spot.InstanceId -Tag @{Key='team'; Value=$InstanceTeam}
 }
 
 End {
